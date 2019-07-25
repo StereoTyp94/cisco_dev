@@ -1,2 +1,5 @@
 /env/
 /.idea/
+/price/
+/__pycache__/
+/migrations/
