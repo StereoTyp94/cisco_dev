@@ -15,7 +15,9 @@ def index():
     form = partForm()
     if form.validate_on_submit():
         part = form.post.data
-        print(part)
+        print(part.split())
+        serv_lev = form.serv_lev.data
+        print(serv_lev)
         return redirect(url_for('index'))
     args = {"method": "GET"}
     if request.method == "POST":

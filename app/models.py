@@ -10,6 +10,7 @@ class Product(db.Model):
     def __repr__(self):
         return '<Part {}>'.format(self.part)
 
+
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     serv_lev = db.Column(db.String(10))
