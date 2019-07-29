@@ -20,17 +20,43 @@
     {% endif %}
 
 
-    {% if args["method"] == "POST" %}
-        {% if args["file_size_error"] %}
-            <h1>Размер файла превышает 1мб. или друго формата!</h1>
-        {% else %}
-            <h1>Файл успешно загружен.</h1>
-        {% endif %}
-    {% endif %}
     <form action="/" method="POST" enctype="multipart/form-data">
         <input type="file" name="myfile">
         <button type="submit">Загрузить</button>
     </form>
+
+
+    {% if table_answer %}
+        <table align="center" width="100%" border="1" style="color:red;">
+            <tr>
+                <td>Part#</td>
+                <td>SKU</td>
+                <td>Price</td>
+                <td>Commentary</td>
+            </tr>
+            {% for line in table_answer %}
+                <tr>
+                    {% for data in line %}
+                        <td>{{ data }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            <tr>
+
+            </tr>
+        </table>
+    {% endif %}
+
+
+    {% if args["method"] == "POST" %}
+        {% if args["file_size_error"] %}
+            <h1>Размер файла превышает 1мб. или друго формата!</h1>
+        {% elif args["input_size_error"] %}
+            <h1>Вы ввели больше 5 значений. Отправьте запрос в виде файла.</h1>
+        {% else %}
+            <h1>Файл успешно загружен.</h1>
+        {% endif %}
+    {% endif %}
 
 </body>
 </html>

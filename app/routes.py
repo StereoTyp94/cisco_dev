@@ -1,6 +1,6 @@
 from app import app
 from flask import render_template, request, redirect, url_for
-from app.answer_xlsx import create_answer
+from app.answer_xlsx import create_answer_table, create_answer_excel
 from app.forms import partForm
 
 
@@ -12,14 +12,17 @@ def allowed_file(filename):
 @app.route('/', methods=["POST", "GET"])
 @app.route('/index', methods=["POST", "GET"])
 def index():
+    args = {"method": "GET"}
     form = partForm()
     if form.validate_on_submit():
         part = form.post.data
-        print(part.split())
-        serv_lev = form.serv_lev.data
-        print(serv_lev)
-        return redirect(url_for('index'))
-    args = {"method": "GET"}
+        if len(part.split()) > 5:
+            table_answer = False
+            args["input_size_error"] = True
+        else:
+            table_answer = create_answer_table(part)
+        args["method"] = "POST"
+        return render_template("index.html", form=form, table_answer=table_answer, args=args)
     if request.method == "POST":
         file = request.files["myfile"]
         if allowed_file(file.filename):
@@ -30,7 +33,7 @@ def index():
             else:
                 print('файл меньше 1 мб')
                 #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                create_answer(file_bytes.decode())
+                create_answer_excel(file_bytes.decode())
         else:
             args["file_size_error"] = True
         args["method"] = "POST"

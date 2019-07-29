@@ -3,7 +3,7 @@ from app import db
 from app.models import Product, Service
 
 
-def create_answer(part_str):
+def create_answer_excel(part_str):
     parts = part_str.split()
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -25,6 +25,20 @@ def create_answer(part_str):
     wb.save(os.path.join(os.getcwd(), 'excel_files', 'answer.xlsx')) #попробовать отправить файл без сохранения
     #отправляем файл на почту
     #os.remove(os.path.join(os.getcwd(), 'excel_files', 'answer.xlsx')) #удаляем файл
+
+
+def create_answer_table(part_str):
+    table_answer = []
+    parts = part_str.split()
+    for part in parts:
+        result = db.session.query(Product.part, Service.sku, Service.serv_gpl).join(Service). \
+            filter(Service.serv_lev == 'SNT', Product.part == part).first()
+        if result:
+            table_answer.append([result[0], result[1], result[2], ''])
+        else:
+            table_answer.append([part, 'N\A', 'N\A', 'Оборудование EndOfSupport или не имеет отдельного смартнета.'])
+
+    return table_answer
 
 
 # db.session.query(Product.part, Service.sku, Service.serv_gpl).join(Service)\
