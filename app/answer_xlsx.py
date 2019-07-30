@@ -1,7 +1,7 @@
 import openpyxl, os
 from app import db
 from app.models import Product, Service
-from flask import send_from_directory, send_file
+from datetime import date
 
 header = ['Part#', 'SKU', 'Price $', 'Commentary']
 services = {
@@ -9,6 +9,19 @@ services = {
     'snte':['SNTE', 'ECEN', 'ECMU'],
     'sntp':['SNTP', 'EC4N', 'ECMU']
             }
+
+
+def query_con(sku, serv_lev):
+    result = []
+    if 'CON-' in sku:
+        result = db.session.query(Product.part).join(Service).\
+            filter(Service.sku == sku).first()
+    else:
+        result.append(sku)
+    if result:
+        return query_serv(result[0], serv_lev)
+    return None
+
 
 def query_serv(part, serv_lev):
     if serv_lev in services:
@@ -19,16 +32,17 @@ def query_serv(part, serv_lev):
                 return result
     return None
 
+
 def create_answer_excel(part_str, serv_lev):
-    if 'answer.xlsx' in os.listdir(os.path.join(os.getcwd(), 'excel_files')):
-        os.remove(os.path.join(os.getcwd(), 'excel_files', 'answer.xlsx')) #удаляем файл
+    # if 'answer.xlsx' in os.listdir(os.path.join(os.getcwd(), 'excel_files')):
+    #     os.remove(os.path.join(os.getcwd(), 'excel_files', 'answer.xlsx')) #удаляем файл
     parts = part_str.split()
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.append(header)
     line = 2
     for part in parts:
-        result = query_serv(part, serv_lev)
+        result = query_con(part, serv_lev)
         if result:
             ws.cell(row=line, column=1).value = result[0]
             ws.cell(row=line, column=2).value = result[1]
@@ -37,11 +51,9 @@ def create_answer_excel(part_str, serv_lev):
             ws.cell(row=line, column=1).value = part
             ws.cell(row=line, column=4).value = 'Оборудование EndOfSupport или не имеет отдельного смартнета.'
         line += 1
-    wb.save(os.path.join(os.getcwd(), 'excel_files', 'answer.xlsx')) #попробовать отправить файл без сохранения
-    print(os.path.join(os.getcwd(), 'excel_files'))
-    print(os.listdir(os.path.join(os.getcwd(), 'excel_files')))
-    send_from_directory(os.path.join(os.getcwd(), 'excel_files'), 'answer.xlsx', as_attachment=True)#отправляем файл
-
+    filename = str(date.today()) + '_smartnet.xlsx'
+    wb.save(os.path.join(os.getcwd(), 'excel_files', filename))
+    return filename
 
 
 def create_answer_table(part_str, serv_lev):
@@ -49,7 +61,7 @@ def create_answer_table(part_str, serv_lev):
     table_answer.append(header)
     parts = part_str.split()
     for part in parts:
-        result = query_serv(part, serv_lev)
+        result = query_con(part, serv_lev)
         if result:
             table_answer.append([result[0], result[1], result[2], ''])
         else:
@@ -60,3 +72,5 @@ def create_answer_table(part_str, serv_lev):
 
 # db.session.query(Product.part, Service.sku, Service.serv_gpl).join(Service)\
 #     .filter(Service.serv_lev == 'SNT', Product.part == '01FT600X').all()
+# db.session.query(Product.part, Service.sku, Service.serv_gpl).join(Service)\
+#     .filter(Service.sku == 'CON-SNT-WSC2FPDL').first()

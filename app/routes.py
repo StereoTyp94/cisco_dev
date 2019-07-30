@@ -19,17 +19,16 @@ def index():
             args["input_size_error"] = True
         else:
             table_answer = create_answer_table(parts, formInput.serv_lev.data)
-        args["method"] = "POST"
-        return render_template("index.html", form=formInput, table_answer=table_answer, args=args)
+        return render_template("index.html", formInput=formInput, formFile=formFile, table_answer=table_answer, args=args)
     if formFile.validate_on_submit():
         filename = secure_filename(formFile.file.data.filename)
         if filename in app.config['ALLOWED_EXTENSIONS']:
             file_bytes = formFile.file.data.read(app.config['MAX_FILE_SIZE'])
             args["file_size_error"] = len(file_bytes) == app.config['MAX_FILE_SIZE']
             if not args["file_size_error"]:
-                create_answer_excel(file_bytes.decode(), formFile.levels.data)
+                filenameAnswer = create_answer_excel(file_bytes.decode(), formFile.levels.data)
         else:
             args["file_size_error"] = True
-        return send_from_directory(os.path.join(os.getcwd(), 'excel_files'), 'answer.xlsx', as_attachment=True)
+        return send_from_directory(os.path.join(os.getcwd(), 'excel_files'), filenameAnswer, as_attachment=True)
         args["method"] = "POST"
     return render_template("index.html", args=args, formInput=formInput, formFile=formFile)
